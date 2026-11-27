@@ -15,10 +15,12 @@ class _ProfilePageState extends State<ProfilePage> {
   final _nameCtrl = TextEditingController();
   final _classCtrl = TextEditingController();
   final _absenCtrl = TextEditingController();
+  final _projectThemeCtrl = TextEditingController();
 
   String _name = 'Nama Pengguna';
-  String _kelas = 'XII RPL 2';
+  String _kelas = 'Belum diatur';
   String _noAbsen = '-';
+  String _projectTheme = 'ReadLater Blog — Warm Editorial';
   String _email = '';
   bool _isLoading = true;
 
@@ -33,6 +35,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _nameCtrl.dispose();
     _classCtrl.dispose();
     _absenCtrl.dispose();
+    _projectThemeCtrl.dispose();
     super.dispose();
   }
 
@@ -43,6 +46,8 @@ class _ProfilePageState extends State<ProfilePage> {
       _name = prefs.getString('user_name') ?? 'Nama Pengguna';
       _kelas = prefs.getString('user_class') ?? 'Belum diatur';
       _noAbsen = prefs.getString('user_absen') ?? '-';
+      _projectTheme =
+          prefs.getString('user_project_theme') ?? 'ReadLater Blog — Warm Editorial';
       _email = prefs.getString('user_email') ?? '';
       _isLoading = false;
     });
@@ -52,6 +57,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _nameCtrl.text = _name == 'Nama Pengguna' ? '' : _name;
     _classCtrl.text = _kelas == 'Belum diatur' ? '' : _kelas;
     _absenCtrl.text = _noAbsen == '-' ? '' : _noAbsen;
+    _projectThemeCtrl.text = _projectTheme;
 
     showDialog(
       context: context,
@@ -87,7 +93,16 @@ class _ProfilePageState extends State<ProfilePage> {
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   labelText: 'No. Absen',
-                  prefixIcon: Icon(Icons.format_list_numbered, color: AppColors.secondary),
+                  prefixIcon:
+                      Icon(Icons.format_list_numbered, color: AppColors.secondary),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _projectThemeCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Tema Proyek',
+                  prefixIcon: Icon(Icons.palette_outlined, color: AppColors.primary),
                 ),
               ),
             ],
@@ -104,6 +119,7 @@ class _ProfilePageState extends State<ProfilePage> {
               final newName = _nameCtrl.text.trim();
               final newClass = _classCtrl.text.trim();
               final newAbsen = _absenCtrl.text.trim();
+              final newTheme = _projectThemeCtrl.text.trim();
 
               final prefs = await SharedPreferences.getInstance();
               await prefs.setString(
@@ -118,6 +134,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 'user_absen',
                 newAbsen.isEmpty ? '-' : newAbsen,
               );
+              await prefs.setString(
+                'user_project_theme',
+                newTheme.isEmpty ? 'ReadLater Blog — Warm Editorial' : newTheme,
+              );
 
               if (!ctx.mounted) return;
               Navigator.pop(ctx);
@@ -126,7 +146,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     backgroundColor: AppColors.secondary,
-                    content: Text('Profil berhasil diperbarui'),
+                    content: Text('Profil & tema proyek berhasil diperbarui'),
                   ),
                 );
               }
@@ -145,7 +165,8 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   String _getInitials(String text) {
-    final parts = text.trim().split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
+    final parts =
+        text.trim().split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
     if (parts.isEmpty) return 'U';
     if (parts.length == 1) return parts.first[0].toUpperCase();
     return '${parts.first[0]}${parts[1][0]}'.toUpperCase();
@@ -226,7 +247,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         children: [
                           CircleAvatar(
                             radius: 36,
-                            backgroundColor: AppColors.secondary.withValues(alpha: 0.16),
+                            backgroundColor:
+                                AppColors.secondary.withValues(alpha: 0.16),
                             child: Text(
                               _getInitials(_name),
                               style: const TextStyle(
@@ -276,6 +298,12 @@ class _ProfilePageState extends State<ProfilePage> {
                             label: 'No. Absen',
                             value: _noAbsen,
                           ),
+                          _buildInfoRow(
+                            icon: Icons.palette_rounded,
+                            iconColor: AppColors.primary,
+                            label: 'Tema Proyek',
+                            value: _projectTheme,
+                          ),
                         ],
                       ),
                     ),
@@ -288,20 +316,23 @@ class _ProfilePageState extends State<ProfilePage> {
                       foregroundColor: Colors.white,
                     ),
                     icon: const Icon(Icons.edit_rounded, size: 18),
-                    label: const Text('Ubah Nama, Kelas & No. Absen'),
+                    label: const Text('Ubah Profil & Tema Proyek'),
                   ),
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
-                    onPressed: () => Navigator.pushNamed(context, AppRouting.topics),
+                    onPressed: () =>
+                        Navigator.pushNamed(context, AppRouting.topics),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.textDark,
                       side: const BorderSide(color: AppColors.border),
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 14, horizontal: 18),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    icon: const Icon(Icons.category_outlined, color: AppColors.secondary),
+                    icon: const Icon(Icons.category_outlined,
+                        color: AppColors.secondary),
                     label: const Text('Kelola Topik'),
                   ),
                   const SizedBox(height: 10),
@@ -309,13 +340,16 @@ class _ProfilePageState extends State<ProfilePage> {
                     onPressed: _handleLogout,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.primary,
-                      side: BorderSide(color: AppColors.primary.withValues(alpha: 0.45)),
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+                      side: BorderSide(
+                          color: AppColors.primary.withValues(alpha: 0.45)),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 14, horizontal: 18),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    icon: const Icon(Icons.logout_rounded, color: AppColors.primary),
+                    icon: const Icon(Icons.logout_rounded,
+                        color: AppColors.primary),
                     label: const Text('Logout'),
                   ),
                 ],
